@@ -1,0 +1,6 @@
+@CurrencyLink_HostAddress = http://localhost:5229
+
+GET {{CurrencyLink_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
