@@ -2,3 +2,4 @@
 2.Error handling 處理 API response 各個Controller上都有建立APIError的Attribute 並且抽象化各種API錯誤的類型與其代碼 請參考CurrencyLink\CurrencyLink\CurrencyLink\Common\APIError.cs
 3.swagger-ui 有補上API Controller註解以及Return Code代表意義
 4.加解密技術應用 (AES/RSA…etc.) appsetting內的連線字串已經過Aes加密 解密的過程在Program.cs內 AES的實作請參考CurrencyLink\CurrencyLink\CurrencyLink\Common\Helper\AESHelper.cs
+5.使用Automapper簡化LINQ過程
