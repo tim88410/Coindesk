@@ -1,12 +1,8 @@
+ï»¿using CurrencyLink;
 using CurrencyLink.Application.Commands;
 using CurrencyLink.Application.Queries;
-using CurrencyLink.Domain.Repositories.CoindeskAPIClient;
-using CurrencyLink.Domain.Service;
-using CurrencyLink.Infrastructure.Repositories.Coindesk;
-using CurrencyLink.Infrastructure.Repositories.CoindeskAPIClient;
-using CurrencyLink.Infrastructure.Service;
+using CurrencyLink.Infrastructure;
 using DBUtility;
-using RestSharp;
 using Serilog;
 using System.Reflection;
 
@@ -23,9 +19,9 @@ builder.Services.AddSwaggerGen(options =>
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     options.IncludeXmlComments(xmlPath);
 });
-// ³]©w Serilog ¤é»x
+// è¨­å®š Serilog æ—¥èªŒ
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.File("logs/log.txt")         // ¿é¥X¨ìÀÉ®×
+    .WriteTo.File("logs/log.txt")         // è¼¸å‡ºåˆ°æª”æ¡ˆ
     .CreateLogger();
 
 builder.Services.AddSingleton(new AESHelper());
@@ -36,26 +32,18 @@ string connectionString = aesHelper.Decrypt(connAESString);
 builder.Services.AddScoped<IDataBaseUtility, DataBaseUtility>(provider =>
     new DataBaseUtility(connectionString));
 
-builder.Services.AddScoped<ICoindeskAPIClientService, CoindeskAPIClientService>();
-builder.Services.AddScoped(sp =>
-{
-    var baseUrl = "https://api.coindesk.com/v1/bpi/currentprice.json";
-    var options = new RestClientOptions(baseUrl);
-    return new RestClient(options);
-});
-builder.Services.AddScoped<IRestClientWrapperService, RestClientWrapperService>();
 
-builder.Services.AddScoped<ICoindeskAPIClientRepository, CoindeskAPIClientRepository>();
-builder.Services.AddScoped<ICoindeskQueryRepository, CoindeskQueryRepository>();
-builder.Services.AddScoped<ICoindeskCommandRepository, CoindeskCommandRepository>();
+// æ·»åŠ æœåŠ¡åˆ° DI å®¹å™¨
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureLayer();
 
-// µù¥U MediatR
+// è¨»å†Š MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-// ³]©w§Ç¦C¤Æ¿ï¶µ
+// è¨­å®šåºåˆ—åŒ–é¸é …
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.PropertyNamingPolicy = null; // ¨Ï¥Î­ì©lÄİ©Ê¦WºÙ
+        options.JsonSerializerOptions.PropertyNamingPolicy = null; // ä½¿ç”¨åŸå§‹å±¬æ€§åç¨±
     });
 
 //AutoMapper

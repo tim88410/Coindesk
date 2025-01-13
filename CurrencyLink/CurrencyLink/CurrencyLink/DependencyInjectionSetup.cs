@@ -8,8 +8,6 @@ namespace CurrencyLink
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            // 註冊 CoindeskService
-            //services.AddScoped<ICoindeskService, CoindeskService>();
 
             return services;
         }
