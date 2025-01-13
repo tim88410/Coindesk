@@ -1,3 +1,5 @@
+using CurrencyLink.Application.Commands;
+using CurrencyLink.Application.Queries;
 using CurrencyLink.Domain.Repositories.CoindeskAPIClient;
 using CurrencyLink.Domain.Service;
 using CurrencyLink.Infrastructure.Repositories.Coindesk;
@@ -55,6 +57,15 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = null; // 使用原始屬性名稱
     });
+
+//AutoMapper
+builder.Services.AddAutoMapper(
+    (serviceProvider, mapperConfiguration) => mapperConfiguration.AddProfiles(new AutoMapper.Profile[]
+    {
+        new CommandProfile(),
+        new QueriesProfile()
+    }),
+    AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 

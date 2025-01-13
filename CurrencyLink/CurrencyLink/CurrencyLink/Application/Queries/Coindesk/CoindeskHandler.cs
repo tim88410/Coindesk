@@ -1,4 +1,5 @@
-﻿using CurrencyLink.Infrastructure.Models.Coindesk;
+﻿using AutoMapper;
+using CurrencyLink.Infrastructure.Models.Coindesk;
 using CurrencyLink.Infrastructure.Repositories.Coindesk;
 using MediatR;
 
@@ -7,39 +8,26 @@ namespace CurrencyLink.Application.Queries.Coindesk
     public class CoindeskHandler : IRequestHandler<CoindeskRequest, CoindeskResponse?>
     {
         private readonly ICoindeskQueryRepository _coindeskQueryRepository;
-        public CoindeskHandler(ICoindeskQueryRepository coindeskQueryRepository) 
+        private readonly IMapper _mapper;
+        public CoindeskHandler(ICoindeskQueryRepository coindeskQueryRepository,
+            IMapper mapper) 
         {
             _coindeskQueryRepository = coindeskQueryRepository;
+            _mapper = mapper;
         }
 
         public async Task<CoindeskResponse?> Handle(CoindeskRequest request, CancellationToken cancellationToken)
         {
-            CoindeskQuery.CoindeskQueryParameter coindeskParameter = new CoindeskQuery.CoindeskQueryParameter()
-            {
-                Code = request.Code,
-                CodeName = request.CodeName,
-                Page = request.Page,
-                PageLimit = request.PageLimit,
-                SortOrderBy = request.SortOrderBy,
-                SortColumn = request.SortColumn
-            };
-            var coindeskQuery = await _coindeskQueryRepository.GetAsync(coindeskParameter);
+
+            var coindeskPara = _mapper.Map<CoindeskQuery.CoindeskQueryParameter>(request);
+            var coindeskQuery = await _coindeskQueryRepository.GetAsync(coindeskPara);
             //DBConnectError
             if (coindeskQuery == null) { 
                 return null;
             }
+
             return new CoindeskResponse {
-                CoindeskInfos = coindeskQuery.Select(s => new CoindeskResponse.CoindeskInfo() {
-                    Id = s.Id,
-                    Code = s.Code,
-                    CodeName = s.CodeName,
-                    Symbol = s.Symbol,
-                    Description = s.Description,
-                    Rate = s.Rate,
-                    RateFloat = s.Rate_float,
-                    CurrencyCode = s.CurrencyCode,
-                    UpdateDate = s.UpdateDate
-                }).ToList(),
+                CoindeskInfos = _mapper.Map<List<CoindeskResponse.CoindeskInfo>>(coindeskQuery.ToList()),
                 Total = coindeskQuery.Select(s => s.TotalItem).FirstOrDefault()
             };
         }
