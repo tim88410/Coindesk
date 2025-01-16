@@ -4,13 +4,10 @@ using CurrencyLink.Common;
 using DBUtility;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 
 namespace CurrencyLink.Controllers
 {
-
-    [ApiLogging]
-    [ApiResult]
-    [APIError]
     [ApiController]
     public class CoindeskController : ControllerBase
     {
@@ -35,6 +32,9 @@ namespace CurrencyLink.Controllers
         /// DataNotFound(6) API呼叫成功，但沒有任何資料回傳<br/>
         /// </code>
         /// </remarks>
+        [ApiLogging]
+        [ApiResult]
+        [APIError]
         [HttpGet]
         [Route("v1/Coindesk")]
         public async Task<IActionResult> Get([FromQuery] CoindeskRequest request)
@@ -69,6 +69,9 @@ namespace CurrencyLink.Controllers
         /// DataNotFound(6) API呼叫成功，但沒有任何資料回傳<br/>
         /// </code>
         /// </remarks>
+        [ApiLogging]
+        [ApiResult]
+        [APIError]
         [HttpGet]
         [Route("v1/Coindesk/{Id}")]
         public async Task<IActionResult> GetOne(int Id)
@@ -110,6 +113,9 @@ namespace CurrencyLink.Controllers
         /// OperationSuccessful(5) 查詢成功<br/>
         /// </code>
         /// </remarks>
+        [ApiLogging]
+        [ApiResult]
+        [APIError]
         [HttpPost]
         [Route("v1/Coindesk")]
         public async Task<IActionResult> Post([FromBody] UpdateCoindeskCommand request)
@@ -147,6 +153,9 @@ namespace CurrencyLink.Controllers
         /// OperationSuccessful(5) 修改成功<br/>
         /// </code>
         /// </remarks>
+        [ApiLogging]
+        [ApiResult]
+        [APIError]
         [HttpPut]
         [Route("v1/Coindesk")]
         public async Task<IActionResult> Put([FromBody] UpdateCoindeskCommand request)
@@ -176,6 +185,9 @@ namespace CurrencyLink.Controllers
         /// OperationSuccessful(5) 刪除成功<br/>
         /// </code>
         /// </remarks>
+        [ApiLogging]
+        [ApiResult]
+        [APIError]
         [HttpDelete]
         [Route("v1/Coindesk")]
         public async Task<IActionResult> Delete(int Id)
@@ -191,6 +203,54 @@ namespace CurrencyLink.Controllers
                 throw new APIError.DBConnectError();
             }
             return Ok();
+        }
+
+        /// <summary>
+        /// Export Coindesk內所有資料為Csv檔
+        /// </summary>
+        /// <remarks>
+        /// <code>
+        /// StatusCode 500 匯出錯誤
+        /// </code>
+        /// </remarks>
+        [HttpGet]
+        [Route("v1/CoindeskExport")]
+        public async Task<object?> Export([FromQuery] CoindeskExportRequest request)
+        {
+            var result = await _mediator.Send<CoindeskExportResponse?>(request);
+            if (result == null)
+            {
+                return StatusCode(500, "An error occurred while DBError.");
+            }
+
+            var csvContent = new StringBuilder();
+            csvContent.AppendLine("Id,Code,CodeName,Symbol,Description,RateFloat,Rate,CurrencyCode,UpdateDate");
+            if (result.CoindeskInfo.Any())
+            { 
+                foreach (var item in result.CoindeskInfo)
+                {
+                    List<string> itemInfo = new List<string>() { 
+                        AddQuotes(item.Id.ToString()),
+                        AddQuotes(item.Code),
+                        AddQuotes(item.CodeName),
+                        AddQuotes(item.Symbol),
+                        AddQuotes(item.Description),
+                        AddQuotes(item.RateFloat.ToString()),
+                        AddQuotes(item.Rate),
+                        AddQuotes(item.CurrencyCode),
+                        AddQuotes(item.UpdateDate.ToString())
+                    };
+                    csvContent.AppendLine(string.Join(",", itemInfo));
+                }
+            }
+
+            var byteArray = Encoding.UTF8.GetBytes(csvContent.ToString());
+            return File(byteArray, "text/csv", "data.csv");
+        }
+
+        private string AddQuotes(string str)
+        {
+            return $"\"{str}\""; ;
         }
     }
 }

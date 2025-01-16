@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CurrencyLink.Application.Queries.Coindesk
 {
-    public class CoindeskRequest : IRequest<CoindeskResponse>
+    public record CoindeskRequest : IRequest<CoindeskResponse>
     {
         /// <summary>
         /// 介接進來的Code
